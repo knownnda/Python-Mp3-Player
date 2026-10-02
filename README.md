@@ -4,7 +4,7 @@
   <a href="#limitations--things-i-want-to-fix">Limitations</a>
 </p>
 
-<h1 align="center">Python MP3 Player</h1>
+<h1 align="center"> Python MP3 Player</h1>
 
 <p align="center">
   <a href="https://www.python.org/">
@@ -12,99 +12,102 @@
   </a>
 </p>
 
-A desktop MP3 player I built in Python. It has a dark-themed window, a playlist, a seek bar, volume control, shuffle and repeat, and it remembers your playlist between sessions.
+A simple desktop MP3 player I made in Python using tkinter and pygame.
+It plays your MP3 files, has a playlist, a seek bar, volume control, shuffle and repeat, and it remembers your playlist when you close it.
 
-After building a C++ port scanner, I wanted to try something more visual and interactive, so I made this Python GUI player to learn how GUIs, audio, and program state fit together. It's not perfect [See Limitations](#limitations--things-i-want-to-fix), but it works and I'm proud of it.
+<p align="center">
+  <img width="341" height="455" alt="screenshot" src="https://github.com/user-attachments/assets/0d2c2430-a203-4d17-8a03-5cdd9e31f8dd" />
+</p>
 
-<img width="341" height="455" alt="screenshot" src="https://github.com/user-attachments/assets/0d2c2430-a203-4d17-8a03-5cdd9e31f8dd" />  
+## How to run it
+
+You need Python 3.8 or newer. tkinter comes with Python on Windows and macOS. On Linux you may need `sudo apt install python3-tk`.
+
+1. **Clone the repo**
+```bash
+   git clone https://github.com/knownnda/Python-Mp3-Player.git
+   cd Python-Mp3-Player
+```
+2. **Install the libraries**
+```bash
+   pip install -r requirements.txt
+```
+3. **Start the player**
+```bash
+   python mp3_player.py
+```
+4. **Play some music**
+   Click **Add files** or **Add folder**, pick some MP3s, then double-click a song or press **Play**.
+
+> Tested on: Windows, Python 3.x
 
 ## Features
 
 - Play, pause, stop, next and previous
-- Seek bar you can click or drag, with a live `elapsed / total` timer
+- Seek bar you can click or drag, with a live timer
 - Volume slider
 - Shuffle and Repeat all
-- Add individual files or a whole folder (it searches subfolders too)
+- Add single files or a whole folder
 - Remove songs or clear the playlist
-- Double-click a song to play it
-- Playlist is saved when you close the app and loaded next time (missing files are skipped)
+- Playlist is saved when you close the app and loaded next time
 - Keyboard shortcuts: `Space` = play/pause, `←` / `→` = previous / next
-- Friendly error messages instead of crashes if a file is missing or broken
+- Error messages instead of crashes if a file is missing or broken
 
-## Requirements
+## What do the libraries do?
 
-- Python 3.8 or newer
-- [pygame](https://www.pygame.org/) (plays the audio)
-- [mutagen](https://mutagen.readthedocs.io/) (optional, gives more accurate song lengths)
-- tkinter (the window). It comes with Python on Windows and macOS. On some Linux installs you need to add it yourself:
+**tkinter** makes the window, buttons, sliders and playlist box. It comes with Python.
 
-```bash
-sudo apt install python3-tk
-```
+**pygame** plays the actual sound. I only use its `mixer.music` part.
 
-## How to run it
+**mutagen** is optional. It reads the exact length of a song. Without it, the program still works but is a bit slower at finding the length.
 
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/knownnda/Python-Mp3-Player.git
-   cd Python-Mp3-Player
-   ```
-2. **Install the libraries**
-   ```bash
-   pip install -r requirements.txt
-   ```
-   (If `pip` isn't found, try `python -m pip install -r requirements.txt` or `pip3`.)
-3. **Start the player**
-   ```bash
-   python mp3_player.py
-   ```
-4. Click **Add files** or **Add folder**, pick some MP3s, then double-click a song or press **Play**.
+## How it works
 
-> Tested on: Windows 11, Python 3.12
+Everything is in one file, `mp3_player.py`. It has four sections:
 
-## How it works (short version)
+1. Helper functions (format time, get song names and lengths)
+2. Playlist functions (add, remove, clear, save, load)
+3. Playback functions (play, pause, stop, next, previous, seek, volume)
+4. The window, plus a loop that runs every 250 ms to update the timer and move on to the next song
 
-Everything is in one file, `mp3_player.py`, split into sections:
+## What I Learnt
 
-| Section | What it does |
-| --- | --- |
-| Helper functions | Formats time, gets song names and lengths, redraws the playlist |
-| Playlist functions | Add, remove, clear, save and load songs |
-| Playback functions | Play, pause, stop, next, previous, seek, volume |
-| Main loop and window | Builds the tkinter window and runs `update_loop()` every 250 ms |
+This was my first Python GUI project. It taught me quite a lot about Python, GUIs and how a program keeps track of what is going on.
 
-The window uses **tkinter**. Playing sound uses **pygame.mixer.music**. A function called `update_loop()` runs every quarter of a second using `root.after()`. It updates the timer and seek bar and checks whether the song has finished so it can move on to the next one.
+**Python**
+I got more comfortable with functions, lists, loops, `try/except`, and reading and writing files.
 
-## What this project taught me
+**GUIs**
+I learnt that a GUI doesn't run top to bottom and finish. I set everything up, then `mainloop()` waits for clicks and key presses and calls my functions. I also learnt that `time.sleep()` freezes the window, so `root.after()` is used to repeat things instead.
 
-- **GUIs are event-driven.** My code doesn't run top to bottom and finish. I set things up, then `mainloop()` waits for clicks and key presses and calls my functions. That took a while to click.
-- **You can't use `time.sleep()` in a GUI.** It freezes the whole window. `root.after()` is the right way to do something repeatedly.
-- **Keeping track of state is the hard part.** Variables like `current`, `is_playing`, and `is_paused` all have to agree with each other. Most of my bugs were these getting out of sync, for example after removing the song that was playing.
-- **Off-by-one errors are real.** Wrapping from the last song to the first (and the other way) and shifting the current index after removing a song made me think carefully about list indexes.
-- **Libraries have quirks you only find in the docs.** `pygame` restarts its position counter to 0 every time you seek, so I had to store a `start_offset` and add it back on.
-- **Handle the unhappy path.** Files get moved or deleted, and some MP3s are broken. Using `try/except` and checking `os.path.exists()` stopped the app from crashing.
-- **Saving data with JSON.** I used `json.dump` and `json.load` to save and restore the playlist, and I learned to ignore a corrupt save file instead of crashing.
-- **Optional dependencies.** `try: import mutagen ... except ImportError` lets the program work with or without it.
-- **Testing without the GUI.** I tested my playlist and playback logic by swapping the real `pygame` and `tkinter` for fake stand-ins. That showed me how useful it is to keep logic separate from the interface.
+**Keeping track of state**
+This was the hardest part. Variables like `current`, `is_playing` and `is_paused` all have to agree with each other. Most of my bugs came from them getting out of sync, for example after removing the song that was playing.
+
+**Libraries and their quirks**
+`pygame` restarts its position timer from 0 every time you seek, so I had to store a `start_offset` and add it back on. I also learnt to make a library optional with `try: import ... except ImportError`.
+
+**Saving data**
+I used JSON (`json.dump` and `json.load`) to save the playlist. I also made the program ignore a broken save file instead of crashing.
+
+**Handling errors**
+Files get moved or deleted, and some MP3s are broken. Checking `os.path.exists()` and using `try/except` stopped the program from crashing.
 
 ## Limitations / things I want to fix
 
-I know about these and plan to improve them as I learn more:
+I know about these and want to improve them as I learn more:
 
-- [ ] **Global variables everywhere.** The state (`playlist`, `current`, `is_playing`, ...) is stored in globals. It works, but it gets messy. I want to rewrite this as a `Player` class (and learn about OOP properly).
-- [ ] **One big file.** Splitting it into modules (audio, playlist, GUI) would be cleaner and easier to test.
-- [ ] **No automated tests.** I only tested the logic with throwaway scripts. I want to learn `unittest` or `pytest` and add real tests.
-- [ ] **Seeking isn't perfectly accurate.** `pygame` can be a little off when seeking in some MP3s, especially variable-bitrate ones. Clicking the seek bar also moves in steps on some systems instead of jumping to the spot.
-- [ ] **Slow song-length fallback.** Without `mutagen`, I load the whole file into memory just to get its length. That's slow for big files.
-- [ ] **Checking for the end of a song by polling.** I check every 250 ms whether the music has stopped. `pygame` has an end-of-song event that I should use instead.
-- [ ] **MP3 only.** `pygame` can also play WAV and OGG, but I only allow `.mp3` for now.
-- [ ] **No song info.** It shows the file name only. I'd like to read ID3 tags (title, artist, album) and show album art.
-- [ ] **Shuffle is basic.** It picks a random song each time, so the same song can come up again before others have played. A proper shuffled queue would be better.
-- [ ] **A broken file stops playback.** It should skip to the next song instead.
-- [ ] **Big folders can freeze the window.** Scanning a huge folder happens on the main thread. I need to learn about threads.
-- [ ] **Can't reorder songs.** Drag and drop reordering would be nice.
-- [ ] **Only one saved playlist.** No named playlists yet.
-- [ ] **Button colours on macOS.** tkinter ignores button background colours on macOS, so the buttons look different there. Switching to `ttk` styling or a different GUI toolkit might fix that.
+- [ ] **Global variables.** I stored the state in global variables. It works, but a `Player` class would be tidier.
+- [ ] **One big file.** I want to split it into separate files for audio, playlist and GUI.
+- [ ] **No automated tests.** I want to learn `unittest` or `pytest`.
+- [ ] **Seeking isn't perfect.** It can be slightly off on some MP3s, especially variable-bitrate ones.
+- [ ] **Checking for the end of a song by polling.** I check every 250 ms. `pygame` has an end-of-song event I should use instead.
+- [ ] **MP3 only.** `pygame` can play other formats too.
+- [ ] **No song info or album art.** It only shows the file name. I want to read ID3 tags.
+- [ ] **Basic shuffle.** It picks a random song each time, so one can repeat before the others have played.
+- [ ] **A broken file stops playback.** It should skip to the next song.
+- [ ] **Big folders can freeze the window.** I need to learn about threads.
+- [ ] **Can't reorder songs** and **only one saved playlist.**
+- [ ] **Button colours on macOS.** tkinter ignores button colours there.
 
 ## Project files
 
@@ -115,8 +118,13 @@ requirements.txt   libraries to install
 README.md          this file
 ```
 
+## Disclaimer
+
+This project is made for educational purposes to help me learn Python and GUI programming.
+Please only play MP3s that you legally own or have permission to use. I am not responsible for any misuse of this software.
+
 ## Author
 
 **Naeem Ahmed** ([@knownnda](https://github.com/knownnda))
 
-Feedback and suggestions are welcome. I'm still learning!
+I'm still learning, so feedback is welcome.
