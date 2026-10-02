@@ -1,0 +1,4 @@
+# my personal playlist (contains paths from my computer)
+playlist.json
+__pycache__/
+*.pyc
